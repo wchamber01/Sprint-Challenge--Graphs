@@ -26,27 +26,25 @@ player = Player(world.starting_room)
 
 # Fill this out with directions to walk
 # traversal_path = ['n', 'n']
-
-# 1 Get current room id
-# 2 Get the exits in that room
-# 3 Have a visited dictionary that holds all the rooms the player has been to
-# 4 Have a prev_room that holds data about the previous room
-# 5 Have a traversal_path that is a list of directions the player has traveled
-# 6 While the number of visited rooms is less than the world.rooms move to another room
-# 7 Get the exits in the room
-# 8 Iterate through the exits in the room if there is an exit not yet explored go into that exit
-# 8   change the current_room to become the previous room before going into an exit
-# 9       Get the data from the room  AND save the direction you took to get there
-# 10      Mark the room as visited
-# 11 Get the exits in the room IF there are no exits
-# 12      Go to the reverse direction until you get to a room with an exit to a room that is not visited.
-
-stack = Stack()
+''' UPER
+1.  Get current room id
+2.  Check if room has been visited
+3.  If not visited then push current room to my stack
+4.  Get all exits in that room
+5.  Mark all room exits with ?s
+6.  Pop current room from the stack and start exploring
+7.  Choose a direction to travel
+8.  Mark room as visited and replace ? on selected travel direction with direction
+9.  Set previous room to current room before traveling
+10. After traveling set current room to previous
+11. Set reverse direction to previous room id
+12. Loop over rooms and repeat steps 4 - 11 while visited < number of rooms
+'''
 visited = {}
 traversal_path = []
 
 
-def reverse(dot):
+def reverse(dot):  # Reverse direction of travel
     if dot == 'n':
         return 's'
     if dot == 's':
@@ -57,28 +55,31 @@ def reverse(dot):
         return 'w'
 
 
-def mark_exits(current_room, path_exits):
-    # visited[current_room] = {}
+def mark_exits(current_room, path_exits):  # Mark exits with ?s
+    # Create an exits dict within the visited dict
+    visited[current_room] = {}
     for x in path_exits:
         # Mark room exits with ?s
         visited[current_room][x] = '?'
 
 
-def traverse(current_room, exits=None, previous=None, dot=None):
+def traverse(current_room):  # Traverse the graph
+    stack = Stack()
     current_room = player.current_room.id
     exits = player.current_room.get_exits()
-    # Build my stack
-    stack.push([current_room, previous, exits, dot])
+    # Initialize previous room
+    previous = None
+    # Build my stack beginning with the starting room
+    stack.push([None, current_room, previous, exits])
 
     # traverse (loop) through all rooms until the end
     while len(visited) < len(room_graph):
-        # Pop top element from stack and destructure it
+        # Pop top element from stack and destructure for easier user
         path = stack.pop()
-        # print(exits)
-        current_room = path[0]
-        previous = path[1]
-        exits = path[2]
-        dot = path[3]
+        dot = path[0]
+        current_room = path[1]
+        previous = path[2]
+        exits = path[3]
 
         # Process my element
         # Check if current room not in visited
@@ -95,19 +96,23 @@ def traverse(current_room, exits=None, previous=None, dot=None):
             visited[previous][dot] = current_room
 
         # Explore all paths in the current room
-        for x in visited[current_room].keys():
+        for exits in visited[current_room]:
+            print(visited[current_room].keys())
             # If there are unexplored paths in the current room
-            if visited[current_room][x] == '?':
+            if visited[current_room][exits] == '?':
                 # Push my current path to the stack
                 stack.push(path)
+                # Set previous room to current room
                 previous = player.current_room.id
-                player.travel(x)
-                traversal_path.append(x)
+                # Traverse exits
+                player.travel(exits)
+                # Record path taken
+                traversal_path.append(exits)
+                # Push new current room to stack
                 stack.push(
-                    [x, player.current_room.id, previous, player.current_room.get_exits()])
+                    [exits, player.current_room.id, previous, player.current_room.get_exits()])
                 # break the loop
                 break
-
         # reverse traversal
         if current_room == player.current_room.id:
             player.travel(reverse(dot))
@@ -115,7 +120,6 @@ def traverse(current_room, exits=None, previous=None, dot=None):
 
 
 traverse(player.current_room.id)
-
 
 # TRAVERSAL TEST - DO NOT MODIFY
 visited_rooms = set()
@@ -126,11 +130,12 @@ for move in traversal_path:
     player.travel(move)
     visited_rooms.add(player.current_room)
 
-# if len(visited_rooms) == len(room_graph):
-#     print(f"TESTS PASSED: {len(traversal_path)} moves, {len(visited_rooms)} rooms visited")
-# else:
-#     print("TESTS FAILED: INCOMPLETE TRAVERSAL")
-#     print(f"{len(room_graph) - len(visited_rooms)} unvisited rooms")
+if len(visited_rooms) == len(room_graph):
+    print(
+        f"TESTS PASSED: {len(traversal_path)} moves, {len(visited_rooms)} rooms visited")
+else:
+    print("TESTS FAILED: INCOMPLETE TRAVERSAL")
+    print(f"{len(room_graph) - len(visited_rooms)} unvisited rooms")
 
 #######
 # UNCOMMENT TO WALK AROUND
