@@ -10,8 +10,8 @@ from ast import literal_eval
 world = World()
 
 # You may uncomment the smaller graphs for development and testing purposes.
-# map_file = "maps/test_line.txt"
-map_file = "maps/test_cross.txt"
+map_file = "maps/test_line.txt"
+# map_file = "maps/test_cross.txt"
 # map_file = "maps/test_loop.txt"
 # map_file = "maps/test_loop_fork.txt"
 # map_file = "maps/main_maze.txt"
@@ -22,22 +22,32 @@ world.load_graph(room_graph)
 
 # Print an ASCII map
 world.print_rooms()
-
 player = Player(world.starting_room)
 
 # Fill this out with directions to walk
 # traversal_path = ['n', 'n']
 
-stack = Stack()
-graph = Graph()
-traversal_path = []
-visited = {}
-path = player.current_room
-stack.push(path)
+graph = {}
+visited = None
+previous = None
+path = player.current_room.id
+traversal_path = None
 
-# while s.size > 0:
-print('current room ID:', path.id)
-print('current room EXITS:', path.get_exits())
+
+def recursive(self, path, visited=None, previous=None, traversal_path=None):
+    if visited is None:
+        visited = set()
+        traversal_path = []
+
+        visited.add(path)
+        print('visited:', visited)
+        traversal_path = player.current_room.get_exits()
+        print('traversal_path:', traversal_path)
+
+
+# print('current room LOCATION:', path)
+# print('current room COORDS:', path.get_coords())
+# print('current room EXITS:', path.get_exits())
 
 # TRAVERSAL TEST - DO NOT MODIFY
 visited_rooms = set()
